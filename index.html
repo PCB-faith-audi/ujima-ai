@@ -811,7 +811,7 @@ function logoutUser() {
 async function sendMessage() {
   const message = document.getElementById("input").value;
 
-  const res = await fetch("https://your-backend-url.vercel.app/api/chat", {
+  const res = await fetch("/api/chat", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
