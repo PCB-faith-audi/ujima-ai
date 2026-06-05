@@ -152,4 +152,4 @@ Built by a passionate developer focused on:
 ## 📜 License
 
 This project is for educational and innovation purposes.  
-All rights reserved © 2025 Ujima AI.
+All rights reserved © 2026 Ujima AI.
