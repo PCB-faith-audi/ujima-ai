@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ethics Dossier — Ujima AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green-deep: #0B3D2E; --green-mid: #155C43; --green-soft: #2ECC71;
+      --gold: #D4A017; --gold-light: #F0C040; --white: #FFFFFF;
+      --gray-bg: #F4F6F7; --gray-light: #E8ECEE; --navy: #1B2631;
+      --text-main: #1A2B22; --text-muted: #5A7A6A;
+      --red: #C0392B; --orange: #E67E22;
+      --radius: 16px; --shadow: 0 4px 24px rgba(11,61,46,0.10);
+    }
+    body { font-family: 'Sora', sans-serif; background: var(--gray-bg); color: var(--text-main); overflow-x: hidden; }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(11,61,46,0.97); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(212,160,23,0.18);
+      padding: 0 2rem; height: 68px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo {
+      width: 36px; height: 36px; background: linear-gradient(135deg, var(--gold), #F0C040);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 800; color: var(--green-deep);
+    }
+    .nav-title { font-size: 1.1rem; font-weight: 700; color: var(--white); }
+    .nav-title span { color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 6px; list-style: none; }
+    .nav-links a {
+      color: rgba(255,255,255,0.80); text-decoration: none;
+      font-size: 0.875rem; font-weight: 500; padding: 6px 14px; border-radius: 8px; transition: all 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { background: rgba(212,160,23,0.15); color: var(--gold-light); }
+    .nav-cta { background: var(--gold) !important; color: var(--green-deep) !important; font-weight: 600 !important; padding: 8px 18px !important; }
+
+    .page-header {
+      background: linear-gradient(135deg, #0B3D2E 0%, #1B2631 100%);
+      padding: 120px 2rem 64px; position: relative; overflow: hidden;
+    }
+    .page-header::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 30% 60%, rgba(212,160,23,0.08) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    .page-header-inner { max-width: 860px; margin: 0 auto; position: relative; z-index: 2; }
+    .page-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(212,160,23,0.15); border: 1px solid rgba(212,160,23,0.30);
+      border-radius: 100px; padding: 6px 14px;
+      font-size: 0.78rem; font-weight: 600; color: var(--gold-light); margin-bottom: 20px;
+    }
+    .page-header h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 4vw, 3rem); color: var(--white); line-height: 1.2; margin-bottom: 14px; }
+    .page-header h1 em { color: var(--gold); font-style: italic; }
+    .page-header p { font-size: 1rem; color: rgba(255,255,255,0.65); line-height: 1.7; max-width: 600px; }
+
+    .ethics-wrap { max-width: 960px; margin: 0 auto; padding: 56px 2rem 80px; }
+
+    /* Framework cards */
+    .framework-section { margin-bottom: 56px; }
+    .fw-header {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 28px; padding-bottom: 20px;
+      border-bottom: 2px solid var(--gray-light);
+    }
+    .fw-icon {
+      width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 24px;
+    }
+    .fw-icon.gold-bg { background: rgba(212,160,23,0.15); }
+    .fw-icon.green-bg { background: rgba(46,204,113,0.12); }
+    .fw-icon.navy-bg { background: rgba(27,38,49,0.08); }
+    .fw-icon.red-bg { background: rgba(192,57,43,0.08); }
+    .fw-meta h2 { font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: var(--green-deep); margin-bottom: 4px; }
+    .fw-meta p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+    .fw-tag {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.8px;
+      padding: 4px 12px; border-radius: 100px; text-transform: uppercase;
+      background: rgba(212,160,23,0.12); color: #9A7010;
+      margin-left: auto; white-space: nowrap;
+    }
+
+    .principles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+    .principle-card {
+      background: var(--white); border: 1.5px solid var(--gray-light);
+      border-radius: 16px; padding: 22px 20px;
+      box-shadow: var(--shadow); transition: transform 0.2s;
+    }
+    .principle-card:hover { transform: translateY(-3px); }
+    .pc-letter {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; font-weight: 800; margin-bottom: 14px;
+    }
+    .pc-letter.gold { background: rgba(212,160,23,0.12); color: #9A7010; }
+    .pc-letter.green { background: rgba(46,204,113,0.12); color: #1A8A4A; }
+    .pc-letter.navy { background: rgba(27,38,49,0.08); color: var(--navy); }
+    .principle-card h4 { font-size: 0.95rem; font-weight: 700; color: var(--green-deep); margin-bottom: 6px; }
+    .principle-card p { font-size: 0.83rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* TRACK audit table */
+    .track-table { background: var(--white); border: 1.5px solid var(--gray-light); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); }
+    .track-row {
+      display: grid; grid-template-columns: 48px 1fr 1fr;
+      padding: 18px 22px; border-bottom: 1px solid var(--gray-light);
+      align-items: start; gap: 16px;
+      transition: background 0.2s;
+    }
+    .track-row:last-child { border-bottom: none; }
+    .track-row:hover { background: var(--gray-bg); }
+    .track-letter {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1rem; flex-shrink: 0;
+    }
+    .tl-t { background: rgba(212,160,23,0.12); color: #9A7010; }
+    .tl-r { background: rgba(46,204,113,0.12); color: #1A8A4A; }
+    .tl-a { background: rgba(230,126,34,0.10); color: #B5620A; }
+    .tl-c { background: rgba(27,38,49,0.08); color: var(--navy); }
+    .tl-k { background: rgba(192,57,43,0.08); color: #922B21; }
+    .track-question { font-size: 0.85rem; font-weight: 600; color: var(--green-deep); }
+    .track-answer { font-size: 0.83rem; color: var(--text-muted); line-height: 1.55; }
+
+    /* OASIS data flow */
+    .oasis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .oasis-card {
+      background: var(--white); border: 1.5px solid var(--gray-light);
+      border-radius: 14px; padding: 20px 18px; box-shadow: var(--shadow);
+    }
+    .oasis-card .oc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .oc-icon { font-size: 22px; }
+    .oc-title { font-size: 0.88rem; font-weight: 700; color: var(--green-deep); }
+    .oasis-card p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; }
+    .oasis-card .oc-badge {
+      display: inline-block; margin-top: 10px;
+      font-size: 0.72rem; font-weight: 600; padding: 4px 10px;
+      border-radius: 100px; background: rgba(46,204,113,0.10); color: #1A8A4A;
+      border: 1px solid rgba(46,204,113,0.25);
+    }
+
+    /* PRIDE loop */
+    .pride-timeline { position: relative; padding-left: 32px; }
+    .pride-timeline::before {
+      content: ''; position: absolute; left: 11px; top: 0; bottom: 0;
+      width: 2px; background: linear-gradient(180deg, var(--green-soft), var(--gold));
+    }
+    .pride-item { position: relative; margin-bottom: 28px; }
+    .pride-dot {
+      position: absolute; left: -32px; top: 4px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--white); border: 3px solid var(--green-soft);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; color: var(--green-deep);
+    }
+    .pride-item h4 { font-size: 0.92rem; font-weight: 700; color: var(--green-deep); margin-bottom: 6px; }
+    .pride-item p { font-size: 0.83rem; color: var(--text-muted); line-height: 1.6; }
+    .pride-code {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--navy); color: var(--gold);
+      font-size: 0.80rem; font-weight: 600; padding: 4px 12px;
+      border-radius: 8px; margin-top: 8px; font-family: monospace;
+    }
+
+    /* Rights section */
+    .rights-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .right-card {
+      background: var(--white); border: 1.5px solid var(--gray-light);
+      border-radius: 14px; padding: 22px 18px; text-align: center;
+      box-shadow: var(--shadow); transition: transform 0.2s;
+    }
+    .right-card:hover { transform: translateY(-3px); }
+    .right-icon { font-size: 32px; margin-bottom: 12px; }
+    .right-card h4 { font-size: 0.90rem; font-weight: 700; color: var(--green-deep); margin-bottom: 6px; }
+    .right-card p { font-size: 0.80rem; color: var(--text-muted); line-height: 1.55; }
+
+    /* HORIZON scan */
+    .horizon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+    .horizon-card {
+      background: var(--navy); border-radius: 12px; padding: 18px 16px;
+    }
+    .horizon-card .hc-label { font-size: 0.72rem; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+    .horizon-card p { font-size: 0.80rem; color: rgba(255,255,255,0.65); line-height: 1.55; }
+
+    /* Consent box */
+    .consent-box {
+      background: var(--green-deep); border-radius: 20px; padding: 36px;
+      color: var(--white); margin-bottom: 40px;
+    }
+    .consent-box h3 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--gold); margin-bottom: 12px; }
+    .consent-box p { font-size: 0.88rem; color: rgba(255,255,255,0.75); line-height: 1.7; margin-bottom: 16px; }
+    .consent-swahili {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(212,160,23,0.25);
+      border-radius: 12px; padding: 16px 18px; margin-top: 16px;
+    }
+    .consent-swahili .cs-label { font-size: 0.72rem; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+    .consent-swahili p { font-size: 0.85rem; color: rgba(255,255,255,0.80); font-style: italic; margin-bottom: 0; }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .oasis-grid { grid-template-columns: 1fr; }
+      .rights-grid { grid-template-columns: 1fr; }
+      .principles-grid { grid-template-columns: 1fr; }
+      .track-row { grid-template-columns: 36px 1fr; }
+      .track-answer { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">
+    <div class="nav-logo">U</div>
+    <span class="nav-title">Ujima <span>AI</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="scout.html">Scout Agent</a></li>
+    <li><a href="loan-check.html">Loan Check</a></li>
+    <li><a href="ethics.html" class="active">Ethics</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="review.html" class="nav-cta">Human Review</a></li>
+  </ul>
+</nav>
+
+<section class="page-header">
+  <div class="page-header-inner">
+    <div class="page-badge">⚖️ Ethical Architecture Dossier · Phase 3</div>
+    <h1>Built on<br><em>Conscience, Not Just Code</em></h1>
+    <p>Every decision Ujima AI touches is governed by five ethical frameworks. This page is our public commitment — you can hold us to it.</p>
+  </div>
+</section>
+
+<div class="ethics-wrap">
+
+  <!-- ETHOS Framework -->
+  <div class="framework-section">
+    <div class="fw-header">
+      <div class="fw-icon gold-bg">⚖️</div>
+      <div class="fw-meta">
+        <h2>ETHOS Framework</h2>
+        <p>Five guardrails that govern every AI-assisted loan decision</p>
+      </div>
+      <span class="fw-tag">Core Governance</span>
+    </div>
+    <div class="principles-grid">
+      <div class="principle-card">
+        <div class="pc-letter gold">E</div>
+        <h4>Equity — Who Might We Exclude?</h4>
+        <p>Before every model update, we identify 3 vulnerable groups that may be systematically disadvantaged: women vendors, Busia County residents, and seasonal farmers. Exclusion triggers an immediate model audit.</p>
+      </div>
+      <div class="principle-card">
+        <div class="pc-letter gold">T</div>
+        <h4>Transparency — Show Your Reasoning</h4>
+        <p>Every risk assessment comes with a plain-language explanation. No black-box outputs. Guardian must justify every flag in language a village elder would understand.</p>
+      </div>
+      <div class="principle-card">
+        <div class="pc-letter gold">H</div>
+        <h4>Household Impact</h4>
+        <p>Before flagging a "high concern" assessment, the system models the household food security impact of denial — factoring in children's ages, school calendars, and harvest timing.</p>
+      </div>
+      <div class="principle-card">
+        <div class="pc-letter gold">O</div>
+        <h4>Oversight — Humans Stay In Charge</h4>
+        <p>An immutable audit trail assigns human accountability to every decision. AI recommends. Humans decide. No exceptions for loans above KES 50,000 or applicants with children under 5.</p>
+      </div>
+      <div class="principle-card">
+        <div class="pc-letter gold">S</div>
+        <h4>Sovereignty — Your Data Stays in Kenya</h4>
+        <p>All member data is processed and stored exclusively on AWS Africa (Cape Town). Zero data is shared with external parties. Kenya DPA 2022 compliance is mandatory, not optional.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRACK Audit -->
+  <div class="framework-section">
+    <div class="fw-header">
+      <div class="fw-icon green-bg">🔍</div>
+      <div class="fw-meta">
+        <h2>TRACK Bias Audit</h2>
+        <p>Forensic analysis of our training data and model behaviour — conducted quarterly</p>
+      </div>
+      <span class="fw-tag">Quarterly Audit</span>
+    </div>
+    <div class="track-table">
+      <div class="track-row">
+        <div class="track-letter tl-t">T</div>
+        <div class="track-question">Training Data<br><small style="font-weight:400; color:var(--text-muted);">What % represents informal traders?</small></div>
+        <div class="track-answer">Current training corpus is 38% informal trader data — below our 50% target. Remediation: partnership with Kenya National Bureau of Statistics for Q3 data injection. Urban-centric bias risk acknowledged and flagged.</div>
+      </div>
+      <div class="track-row">
+        <div class="track-letter tl-r">R</div>
+        <div class="track-question">Representation<br><small style="font-weight:400; color:var(--text-muted);">Does taxonomy include shea butter traders?</small></div>
+        <div class="track-answer">Occupation taxonomy updated to include 47 informal trade categories including shea butter, chapati vendor, mkokoteni operator, and miraa trader. Gender-neutral labels enforced throughout.</div>
+      </div>
+      <div class="track-row">
+        <div class="track-letter tl-a">A</div>
+        <div class="track-question">Amplification<br><small style="font-weight:400; color:var(--text-muted);">Does model amplify historical exclusion of women?</small></div>
+        <div class="track-answer">Red team test confirmed: female market vendor in Busia with identical cash flow to male formal employee received equivalent risk score after bias correction patch (v2.1.4). Monthly gender parity checks scheduled.</div>
+      </div>
+      <div class="track-row">
+        <div class="track-letter tl-c">C</div>
+        <div class="track-question">Counterfactuals<br><small style="font-weight:400; color:var(--text-muted);">What if market vendor had identical cash flow to formal employee?</small></div>
+        <div class="track-answer">Counterfactual test result: with identical cash flow, market vendor now receives equivalent or better score due to harvest-cycle income spike modelling. Pre-v2.0 gap of 18 points has been eliminated.</div>
+      </div>
+      <div class="track-row">
+        <div class="track-letter tl-k">K</div>
+        <div class="track-question">Kill Switch<br><small style="font-weight:400; color:var(--text-muted);">Busia County mandatory human review</small></div>
+        <div class="track-answer">All applications from Busia County are flagged for mandatory human review regardless of AI score. This override is hardcoded and cannot be modified without Elders Council approval. Active since January 2025.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OASIS Data Charter -->
+  <div class="framework-section">
+    <div class="fw-header">
+      <div class="fw-icon navy-bg">🔒</div>
+      <div class="fw-meta">
+        <h2>OASIS Data Stewardship</h2>
+        <p>How we collect, store, protect, and delete your data — Kenya DPA 2022 compliant</p>
+      </div>
+      <span class="fw-tag">DPA 2022</span>
+    </div>
+    <div class="oasis-grid">
+      <div class="oasis-card">
+        <div class="oc-header"><span class="oc-icon">✋</span><span class="oc-title">Opt-In Consent</span></div>
+        <p>No data is collected without explicit opt-in. Consent is given in Swahili, Luhya, or English. You choose exactly which data trains the model.</p>
+        <span class="oc-badge">✓ Active</span>
+      </div>
+      <div class="oasis-card">
+        <div class="oc-header"><span class="oc-icon">🎭</span><span class="oc-title">K-Anonymity Anonymisation</span></div>
+        <p>All data is anonymised to k=5 depth, preventing re-identification even in small villages. Names, phone numbers, and IDs are never stored together.</p>
+        <span class="oc-badge">✓ k=5 enforced</span>
+      </div>
+      <div class="oasis-card">
+        <div class="oc-header"><span class="oc-icon">☁️</span><span class="oc-title">Data Sovereignty</span></div>
+        <p>All data is stored exclusively on AWS Africa (Cape Town). No data crosses into European or US data centres. Data flow is publicly audited.</p>
+        <span class="oc-badge">✓ AWS af-south-1</span>
+      </div>
+      <div class="oasis-card">
+        <div class="oc-header"><span class="oc-icon">⏱️</span><span class="oc-title">180-Day Auto-Delete</span></div>
+        <p>Non-essential metadata is automatically deleted after 180 days. Loan history (needed for SACCO records) is retained only with your explicit consent.</p>
+        <span class="oc-badge">✓ Automated</span>
+      </div>
+      <div class="oasis-card">
+        <div class="oc-header"><span class="oc-icon">🔐</span><span class="oc-title">End-to-End Encryption</span></div>
+        <p>All USSD and SMS channels use AES-256 encryption. Data in transit and at rest is fully encrypted. Security audits conducted every 6 months.</p>
+        <span class="oc-badge">✓ AES-256</span>
+      </div>
+      <div class="oasis-card">
+        <div class="oc-header"><span class="oc-icon">🚫</span><span class="oc-title">Zero External Sharing</span></div>
+        <p>Your data is never sold to, shared with, or accessible by any external party including Silicon Valley AI companies, advertisers, or government agencies without court order.</p>
+        <span class="oc-badge">✓ Contractually binding</span>
+      </div>
+    </div>
+
+    <div class="consent-box" style="margin-top:24px;">
+      <h3>Member Consent Script</h3>
+      <p>Before any data is collected, members receive this consent statement in their preferred language:</p>
+      <div class="consent-swahili">
+        <div class="cs-label">🇰🇪 Swahili Version</div>
+        <p>"Data yako ya miamala inafunza tu mfumo wa AI wa Ujima hapa Kenya — haipelekwi kwa makampuni ya Silicon Valley wala mtu mwingine yeyote. Una haki ya kuomba kufuta data yako wakati wowote kwa kupiga *#733#."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIDE Loop -->
+  <div class="framework-section">
+    <div class="fw-header">
+      <div class="fw-icon green-bg">🔄</div>
+      <div class="fw-meta">
+        <h2>PRIDE Human Oversight Loop</h2>
+        <p>The five checkpoints that keep humans in control of every consequential decision</p>
+      </div>
+      <span class="fw-tag">Human-in-Loop</span>
+    </div>
+    <div class="pride-timeline">
+      <div class="pride-item">
+        <div class="pride-dot">P</div>
+        <h4>Pause Points — When AI Must Stop</h4>
+        <p>Mandatory human review is triggered for: loans above KES 50,000; applicants with children under 5; any application from Busia County; 3+ risk flags from Guardian; or any mention of debt collectors or loan sharks.</p>
+        <span class="pride-code">*#733# → Instant human override</span>
+      </div>
+      <div class="pride-item">
+        <div class="pride-dot">R</div>
+        <h4>Review Cadence — Regular Fairness Audits</h4>
+        <p>Quarterly fairness audits are conducted with the SASRA compliance team. Results are published publicly on this page. Any sub-county with a 30%+ approval rate drop vs. baseline is investigated within 48 hours.</p>
+      </div>
+      <div class="pride-item">
+        <div class="pride-dot">I</div>
+        <h4>Interpretability — Explain Like a Village Elder</h4>
+        <p>Every risk flag must be explained in plain language. No technical jargon. Example: "Your income dips during school fee season — we need 3 months of buffer before committing to this repayment amount."</p>
+      </div>
+      <div class="pride-item">
+        <div class="pride-dot">D</div>
+        <h4>Disagreement Rights — Challenge Any Decision</h4>
+        <p>Every member has the right to challenge any AI assessment. Dial *#123# or visit your SACCO branch. The challenge must be reviewed by a human officer within 5 business days, with a written explanation provided.</p>
+        <span class="pride-code">*#123# → Request formal review</span>
+      </div>
+      <div class="pride-item">
+        <div class="pride-dot">E</div>
+        <h4>Elders Council — Community Governance</h4>
+        <p>Governance council composition: 3 SACCO managers, 2 women market vendors, 1 fintech regulator (CBK-nominated), 1 agricultural extension officer. Council meets quarterly and holds veto power over model updates.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Member Rights -->
+  <div class="framework-section" id="rights">
+    <div class="fw-header">
+      <div class="fw-icon gold-bg">🏛️</div>
+      <div class="fw-meta">
+        <h2>Your Rights as a Member</h2>
+        <p>Under Kenya DPA 2022 and SASRA regulations, you have six enforceable rights</p>
+      </div>
+      <span class="fw-tag">DPA 2022</span>
+    </div>
+    <div class="rights-grid">
+      <div class="right-card">
+        <div class="right-icon">👁️</div>
+        <h4>Right to Access</h4>
+        <p>Request a full copy of all data Ujima AI holds about you at any time. Response within 14 days.</p>
+      </div>
+      <div class="right-card">
+        <div class="right-icon">✏️</div>
+        <h4>Right to Correct</h4>
+        <p>If any data about you is wrong, you have the right to have it corrected or deleted immediately.</p>
+      </div>
+      <div class="right-card">
+        <div class="right-icon">🚫</div>
+        <h4>Right to Withdraw Consent</h4>
+        <p>Withdraw your data consent at any time. Dial *#733# or visit your SACCO branch.</p>
+      </div>
+      <div class="right-card">
+        <div class="right-icon">🤝</div>
+        <h4>Right to Human Review</h4>
+        <p>Any AI assessment can be escalated to a human officer. No AI decision is ever final alone.</p>
+      </div>
+      <div class="right-card">
+        <div class="right-icon">📢</div>
+        <h4>Right to Complain</h4>
+        <p>Formal complaints go to the Office of the Data Protection Commissioner of Kenya within 30 days.</p>
+      </div>
+      <div class="right-card">
+        <div class="right-icon">🗑️</div>
+        <h4>Right to Erasure</h4>
+        <p>Request complete deletion of all your data. Processed within 30 days. SACCO legal records excluded.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- HORIZON Scan -->
+  <div class="framework-section">
+    <div class="fw-header">
+      <div class="fw-icon red-bg">🌅</div>
+      <div class="fw-meta">
+        <h2>HORIZON Impact Scan</h2>
+        <p>10-year ecosystem impact analysis — projected across three generations</p>
+      </div>
+      <span class="fw-tag">Long-term Ethics</span>
+    </div>
+    <div class="horizon-grid">
+      <div class="horizon-card">
+        <div class="hc-label">H — Historical Harm</div>
+        <p>Does this replicate colonial extraction of African financial data? Active safeguard: all data sovereignty contractually guaranteed to remain in Kenya.</p>
+      </div>
+      <div class="horizon-card">
+        <div class="hc-label">O — Opportunity Cost</div>
+        <p>Will automation erode chama savings culture? Mitigation: Scout Agent actively reinforces group savings behaviour and chama participation.</p>
+      </div>
+      <div class="horizon-card">
+        <div class="hc-label">R — Ripple Effects</div>
+        <p>Loan access has been correlated with 12% improvement in school attendance in Kakamega County pilot (2024 internal study).</p>
+      </div>
+      <div class="horizon-card">
+        <div class="hc-label">I — Intergenerational</div>
+        <p>Designed to build generational wealth through harvest-cycle financial literacy passed from parents to children, not dependency on AI.</p>
+      </div>
+      <div class="horizon-card">
+        <div class="hc-label">Z — Zero-Sum Check</div>
+        <p>Who profits: Local SACCO (sustainability). Who suffers: None, if ethical design is maintained. Profit extraction is capped at SASRA-regulated rates.</p>
+      </div>
+      <div class="horizon-card">
+        <div class="hc-label">O — Open Futures</div>
+        <p>System designed to preserve human agency. Exit ramps are built at every step. Members can opt out completely without penalty to their loan eligibility.</p>
+      </div>
+      <div class="horizon-card">
+        <div class="hc-label">N — Non-Human Impact</div>
+        <p>Server carbon cost monitored quarterly. AWS Cape Town runs on 80%+ renewable energy. Carbon offset program active for remaining 20%.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script type="module">
+import { auth, onAuthStateChanged } from "./auth.js";
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "index.html";
+  }
+});
+</script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0jCZ5g5vnCKI3ihbeSCmfbHZELQtbvIQ",
+    authDomain: "ujima-ai-c3c48.firebaseapp.com",
+    projectId: "ujima-ai-c3c48",
+    storageBucket: "ujima-ai-c3c48.firebasestorage.app",
+    messagingSenderId: "711296977200",
+    appId: "1:711296977200:web:9b8065b33cace5562e20f5"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  console.log("🔥 Firebase connected successfully!");
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js"></script>
+
+<script src="firebase.js"></script>
+</body>
+</html>

@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scout Agent — Ujima AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-deep: #0B3D2E;
+      --green-mid: #155C43;
+      --green-soft: #2ECC71;
+      --gold: #D4A017;
+      --gold-light: #F0C040;
+      --white: #FFFFFF;
+      --gray-bg: #F4F6F7;
+      --gray-light: #E8ECEE;
+      --navy: #1B2631;
+      --text-main: #1A2B22;
+      --text-muted: #5A7A6A;
+      --red: #C0392B;
+      --orange: #E67E22;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 4px 24px rgba(11,61,46,0.10);
+      --shadow-lg: 0 8px 48px rgba(11,61,46,0.16);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Sora', sans-serif;
+      background: var(--gray-bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(11,61,46,0.97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(212,160,23,0.18);
+      padding: 0 2rem;
+      height: 68px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--gold) 0%, #F0C040 100%);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 800; color: var(--green-deep);
+    }
+    .nav-title { font-size: 1.1rem; font-weight: 700; color: var(--white); }
+    .nav-title span { color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 6px; list-style: none; }
+    .nav-links a {
+      color: rgba(255,255,255,0.80); text-decoration: none;
+      font-size: 0.875rem; font-weight: 500;
+      padding: 6px 14px; border-radius: 8px; transition: all 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      background: rgba(212,160,23,0.15); color: var(--gold-light);
+    }
+    .nav-cta {
+      background: var(--gold) !important; color: var(--green-deep) !important;
+      font-weight: 600 !important; padding: 8px 18px !important;
+    }
+    .nav-cta:hover { background: var(--gold-light) !important; }
+
+    /* ─── PAGE HEADER ─── */
+    .page-header {
+      background: linear-gradient(135deg, var(--green-deep) 0%, #0E4D38 100%);
+      padding: 120px 2rem 64px;
+      position: relative; overflow: hidden;
+    }
+    .page-header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle at 80% 40%, rgba(46,204,113,0.10) 0%, transparent 55%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1' fill='rgba(212,160,23,0.12)'/%3E%3C/svg%3E");
+      background-size: auto, 60px 60px;
+      pointer-events: none;
+    }
+    .page-header-inner {
+      max-width: 800px; margin: 0 auto;
+      position: relative; z-index: 2;
+    }
+    .page-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(46,204,113,0.15);
+      border: 1px solid rgba(46,204,113,0.30);
+      border-radius: 100px; padding: 6px 14px;
+      font-size: 0.78rem; font-weight: 600;
+      color: var(--green-soft); letter-spacing: 0.5px;
+      margin-bottom: 20px;
+    }
+    .page-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: var(--white); line-height: 1.2; margin-bottom: 14px;
+    }
+    .page-header h1 em { color: var(--gold); font-style: italic; }
+    .page-header p {
+      font-size: 1rem; color: rgba(255,255,255,0.68);
+      line-height: 1.7; max-width: 560px;
+    }
+    .agent-limits {
+      display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px;
+    }
+    .limit-chip {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 100px; padding: 6px 14px;
+      font-size: 0.77rem; color: rgba(255,255,255,0.60); font-weight: 500;
+    }
+
+    /* ─── MAIN LAYOUT ─── */
+    .main-wrap {
+      max-width: 1000px; margin: 0 auto;
+      padding: 56px 2rem 80px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+      align-items: start;
+    }
+
+    /* ─── FORM CARD ─── */
+    .form-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-light);
+      border-radius: 24px;
+      padding: 36px 32px;
+      box-shadow: var(--shadow);
+    }
+    .form-card-title {
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--green-deep); margin-bottom: 6px;
+    }
+    .form-card-sub {
+      font-size: 0.85rem; color: var(--text-muted);
+      margin-bottom: 28px; line-height: 1.6;
+    }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block; font-size: 0.83rem; font-weight: 600;
+      color: var(--green-deep); margin-bottom: 8px;
+    }
+    .form-group label span {
+      font-weight: 400; color: var(--text-muted); font-size: 0.78rem;
+    }
+
+    select, input[type="number"], input[type="text"] {
+      width: 100%; padding: 12px 16px;
+      border: 1.5px solid var(--gray-light);
+      border-radius: var(--radius-sm);
+      font-family: 'Sora', sans-serif;
+      font-size: 0.88rem; color: var(--text-main);
+      background: var(--gray-bg);
+      outline: none; transition: all 0.2s;
+      appearance: none;
+    }
+    select:focus, input:focus {
+      border-color: var(--green-mid);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(21,92,67,0.10);
+    }
+
+    .radio-group {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .radio-option {
+      position: relative;
+    }
+    .radio-option input[type="radio"] {
+      position: absolute; opacity: 0; width: 0; height: 0;
+    }
+    .radio-option label {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px;
+      background: var(--gray-bg);
+      border: 1.5px solid var(--gray-light);
+      border-radius: var(--radius-sm);
+      cursor: pointer; font-size: 0.83rem; font-weight: 500;
+      color: var(--text-muted); transition: all 0.2s;
+      margin-bottom: 0;
+    }
+    .radio-option input:checked + label {
+      border-color: var(--green-mid);
+      background: rgba(21,92,67,0.06);
+      color: var(--green-deep);
+      font-weight: 600;
+    }
+
+    .checkbox-group { display: flex; flex-direction: column; gap: 8px; }
+    .checkbox-option { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .checkbox-option input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--green-mid); }
+    .checkbox-option span { font-size: 0.85rem; color: var(--text-muted); }
+
+    .range-wrap { display: flex; align-items: center; gap: 12px; }
+    input[type="range"] {
+      flex: 1; height: 6px;
+      background: var(--gray-light); border-radius: 100px;
+      border: none; padding: 0; outline: none;
+      accent-color: var(--green-mid);
+    }
+    .range-val {
+      font-size: 0.88rem; font-weight: 700;
+      color: var(--green-deep); min-width: 52px; text-align: right;
+    }
+
+    .btn-analyze {
+      width: 100%; padding: 16px;
+      background: linear-gradient(135deg, var(--green-deep), #155C43);
+      color: var(--white);
+      font-family: 'Sora', sans-serif;
+      font-size: 0.95rem; font-weight: 700;
+      border: none; border-radius: 14px; cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: 0 4px 20px rgba(11,61,46,0.30);
+      margin-top: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-analyze:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(11,61,46,0.35);
+    }
+    .btn-analyze:disabled {
+      opacity: 0.6; cursor: not-allowed; transform: none;
+    }
+
+    /* ─── OUTPUT PANEL ─── */
+    .output-panel {
+      display: flex; flex-direction: column; gap: 20px;
+    }
+
+    /* Placeholder state */
+    .output-placeholder {
+      background: var(--white);
+      border: 1.5px dashed var(--gray-light);
+      border-radius: 24px;
+      padding: 48px 32px;
+      text-align: center;
+    }
+    .output-placeholder .ph-icon {
+      font-size: 48px; margin-bottom: 16px;
+    }
+    .output-placeholder h3 {
+      font-size: 1rem; font-weight: 600;
+      color: var(--green-deep); margin-bottom: 8px;
+    }
+    .output-placeholder p {
+      font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;
+    }
+
+    /* Result card */
+    .result-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-light);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      display: none;
+      animation: slideIn 0.4s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .result-card.show { display: block; }
+
+    .result-header {
+      padding: 24px 28px 20px;
+      border-bottom: 1px solid var(--gray-light);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .result-header-left h3 {
+      font-size: 1rem; font-weight: 700; color: var(--green-deep);
+    }
+    .result-header-left p {
+      font-size: 0.80rem; color: var(--text-muted); margin-top: 2px;
+    }
+    .readiness-badge {
+      padding: 8px 16px; border-radius: 100px;
+      font-size: 0.82rem; font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .readiness-badge.ready {
+      background: rgba(46,204,113,0.12); color: #1A8A4A;
+      border: 1px solid rgba(46,204,113,0.30);
+    }
+    .readiness-badge.caution {
+      background: rgba(230,126,34,0.10); color: #B5620A;
+      border: 1px solid rgba(230,126,34,0.25);
+    }
+    .readiness-badge.prepare {
+      background: rgba(212,160,23,0.12); color: #9A7010;
+      border: 1px solid rgba(212,160,23,0.30);
+    }
+
+    .result-body { padding: 24px 28px; }
+
+    .insight-block {
+      margin-bottom: 18px; padding: 16px 18px;
+      border-radius: 12px; border-left: 4px solid;
+    }
+    .insight-block.green {
+      background: rgba(46,204,113,0.07);
+      border-color: var(--green-soft);
+    }
+    .insight-block.gold {
+      background: rgba(212,160,23,0.07);
+      border-color: var(--gold);
+    }
+    .insight-block.orange {
+      background: rgba(230,126,34,0.07);
+      border-color: var(--orange);
+    }
+    .insight-block.navy {
+      background: rgba(27,38,49,0.05);
+      border-color: var(--navy);
+    }
+    .insight-block .ib-label {
+      font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+    .insight-block.green .ib-label { color: #1A8A4A; }
+    .insight-block.gold .ib-label { color: #9A7010; }
+    .insight-block.orange .ib-label { color: #B5620A; }
+    .insight-block.navy .ib-label { color: var(--navy); }
+    .insight-block p {
+      font-size: 0.87rem; color: var(--text-main); line-height: 1.65;
+    }
+
+    /* Harvest calendar */
+    .harvest-cal {
+      background: var(--gray-bg);
+      border-radius: 12px; padding: 16px 18px;
+      margin-bottom: 18px;
+    }
+    .harvest-cal-title {
+      font-size: 0.78rem; font-weight: 700;
+      color: var(--green-deep); text-transform: uppercase;
+      letter-spacing: 0.8px; margin-bottom: 12px;
+    }
+    .months-row {
+      display: flex; gap: 4px;
+    }
+    .month-block {
+      flex: 1; text-align: center;
+      padding: 6px 2px; border-radius: 6px;
+      font-size: 0.65rem; font-weight: 600;
+      color: var(--text-muted);
+      background: var(--white);
+      border: 1px solid var(--gray-light);
+    }
+    .month-block.peak {
+      background: rgba(46,204,113,0.15);
+      color: #1A8A4A;
+      border-color: rgba(46,204,113,0.30);
+    }
+    .month-block.good {
+      background: rgba(212,160,23,0.12);
+      color: #9A7010;
+      border-color: rgba(212,160,23,0.25);
+    }
+    .month-block.low {
+      background: rgba(192,57,43,0.07);
+      color: #A03020;
+      border-color: rgba(192,57,43,0.15);
+    }
+    .cal-legend {
+      display: flex; gap: 14px; margin-top: 10px; flex-wrap: wrap;
+    }
+    .cal-leg-item {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 0.72rem; color: var(--text-muted);
+    }
+    .leg-dot {
+      width: 10px; height: 10px; border-radius: 3px;
+    }
+    .leg-dot.peak { background: rgba(46,204,113,0.50); }
+    .leg-dot.good { background: rgba(212,160,23,0.50); }
+    .leg-dot.low  { background: rgba(192,57,43,0.25); }
+
+    /* Savings plan */
+    .savings-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      margin-bottom: 18px;
+    }
+    .savings-cell {
+      background: var(--gray-bg); border-radius: 12px;
+      padding: 14px 16px; border: 1px solid var(--gray-light);
+    }
+    .savings-cell .sc-label {
+      font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;
+    }
+    .savings-cell .sc-val {
+      font-size: 1.1rem; font-weight: 700; color: var(--green-deep);
+    }
+    .savings-cell .sc-val.gold { color: var(--gold); }
+
+    /* Action buttons */
+    .result-actions {
+      display: flex; gap: 10px; padding: 20px 28px;
+      border-top: 1px solid var(--gray-light);
+    }
+    .btn-guardian {
+      flex: 1; padding: 13px;
+      background: linear-gradient(135deg, var(--gold), #E8B420);
+      color: var(--green-deep); font-family: 'Sora', sans-serif;
+      font-size: 0.88rem; font-weight: 700;
+      border: none; border-radius: 12px; cursor: pointer;
+      text-decoration: none; text-align: center;
+      transition: all 0.2s; display: flex;
+      align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-guardian:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(212,160,23,0.35); }
+    .btn-reset {
+      padding: 13px 20px;
+      background: transparent; color: var(--text-muted);
+      font-family: 'Sora', sans-serif; font-size: 0.85rem; font-weight: 600;
+      border: 1.5px solid var(--gray-light); border-radius: 12px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-reset:hover { border-color: var(--green-mid); color: var(--green-deep); }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block; width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.30);
+      border-top-color: var(--white);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── INFO BOX ─── */
+    .info-box {
+      background: var(--white);
+      border: 1.5px solid var(--gray-light);
+      border-radius: 16px; padding: 20px 22px;
+      box-shadow: var(--shadow);
+    }
+    .info-box-title {
+      font-size: 0.80rem; font-weight: 700;
+      color: var(--green-deep); text-transform: uppercase;
+      letter-spacing: 0.8px; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .info-box ul {
+      list-style: none; display: flex; flex-direction: column; gap: 8px;
+    }
+    .info-box li {
+      font-size: 0.83rem; color: var(--text-muted);
+      display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;
+    }
+    .info-box li::before {
+      content: '✓';
+      color: var(--green-soft); font-weight: 700; flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ─── DISCLAIMER ─── */
+    .bottom-disclaimer {
+      max-width: 1000px; margin: 0 auto 48px;
+      padding: 0 2rem;
+    }
+    .disclaimer-card {
+      background: var(--navy);
+      border-radius: 16px; padding: 20px 24px;
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+    .disclaimer-card .di-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+    .disclaimer-card p {
+      font-size: 0.83rem; color: rgba(255,255,255,0.65); line-height: 1.6;
+    }
+    .disclaimer-card strong { color: var(--gold); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .main-wrap { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .radio-group { grid-template-columns: 1fr; }
+      .savings-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-brand">
+    <div class="nav-logo">U</div>
+    <span class="nav-title">Ujima <span>AI</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="scout.html" class="active">Scout Agent</a></li>
+    <li><a href="loan-check.html">Loan Check</a></li>
+    <li><a href="ethics.html">Ethics</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="review.html" class="nav-cta">Human Review</a></li>
+  </ul>
+</nav>
+
+<!-- PAGE HEADER -->
+<section class="page-header">
+  <div class="page-header-inner">
+    <div class="page-badge">🌱 Agent 1 of 3 · Financial Literacy Coach</div>
+    <h1>Scout Agent<br><em>Know Before You Borrow</em></h1>
+    <p>The Scout analyses your income pattern, detects harvest cycles, and gives you personalised financial coaching — before you ever submit a loan application.</p>
+    <div class="agent-limits">
+      <span class="limit-chip">📱 Max 3 messages/day</span>
+      <span class="limit-chip">🚫 Never recommends specific loan amounts</span>
+      <span class="limit-chip">⚠️ Alerts Guardian if financial stress detected</span>
+      <span class="limit-chip">🔒 Data stays in Kenya (AWS Cape Town)</span>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN -->
+<div class="main-wrap">
+
+  <!-- LEFT: FORM -->
+  <div class="form-card">
+    <div class="form-card-title">📋 Your Financial Profile</div>
+    <div class="form-card-sub">Tell us about your livelihood so Scout can give you accurate, Kenya-specific guidance.</div>
+
+    <!-- Occupation -->
+    <div class="form-group">
+      <label>Occupation <span>(main source of income)</span></label>
+      <select id="occupation">
+        <option value="">— Select occupation —</option>
+        <option value="market_vendor">Market Vendor / Mama Mboga</option>
+        <option value="maize_farmer">Maize Farmer</option>
+        <option value="matooke_farmer">Matooke / Banana Farmer</option>
+        <option value="tea_farmer">Tea Farmer</option>
+        <option value="boda_boda">Boda Boda / Motorbike Taxi</option>
+        <option value="jua_kali">Jua Kali Artisan</option>
+        <option value="shopkeeper">Shopkeeper / Duka Owner</option>
+        <option value="formal_employee">Formal Employee (salaried)</option>
+        <option value="shea_butter">Shea Butter / Oil Trader</option>
+        <option value="fish_trader">Fish Trader / Monger</option>
+        <option value="other">Other Informal Trade</option>
+      </select>
+    </div>
+
+    <!-- Monthly income -->
+    <div class="form-group">
+      <label>Estimated Monthly Income <span>(KES — average month)</span></label>
+      <input type="number" id="income" placeholder="e.g. 18000" min="0" />
+    </div>
+
+    <!-- Income type -->
+    <div class="form-group">
+      <label>How regular is your income?</label>
+      <div class="radio-group">
+        <div class="radio-option">
+          <input type="radio" id="inc_stable" name="income_type" value="stable" />
+          <label for="inc_stable">📅 Stable / monthly</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="inc_seasonal" name="income_type" value="seasonal" checked />
+          <label for="inc_seasonal">🌾 Seasonal / harvest</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="inc_weekly" name="income_type" value="weekly" />
+          <label for="inc_weekly">📆 Weekly / daily</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="inc_irregular" name="income_type" value="irregular" />
+          <label for="inc_irregular">🎲 Irregular / unpredictable</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dependents -->
+    <div class="form-group">
+      <label>Number of Dependents <span id="dep-display">(0)</span></label>
+      <div class="range-wrap">
+        <input type="range" id="dependents" min="0" max="10" value="0"
+          oninput="document.getElementById('dep-display').textContent='('+this.value+')';" />
+        <span class="range-val" id="dep-val">0</span>
+      </div>
+    </div>
+
+    <!-- Savings -->
+    <div class="form-group">
+      <label>Current Savings / SACCO Balance <span>(KES, optional)</span></label>
+      <input type="number" id="savings" placeholder="e.g. 5000" min="0" />
+    </div>
+
+    <!-- Goal -->
+    <div class="form-group">
+      <label>Your Primary Goal</label>
+      <select id="goal">
+        <option value="loan_readiness">Get ready for a loan</option>
+        <option value="savings_plan">Build a savings plan</option>
+        <option value="repayment_plan">Plan loan repayment</option>
+        <option value="general">General financial guidance</option>
+      </select>
+    </div>
+
+    <!-- Seasons -->
+    <div class="form-group">
+      <label>Which harvest seasons apply to you? <span>(tick all that apply)</span></label>
+      <div class="checkbox-group">
+        <label class="checkbox-option">
+          <input type="checkbox" id="s1" value="long_rains" />
+          <span>🌧️ Long Rains harvest (Mar – May)</span>
+        </label>
+        <label class="checkbox-option">
+          <input type="checkbox" id="s2" value="short_rains" />
+          <span>🌦️ Short Rains harvest (Oct – Nov)</span>
+        </label>
+        <label class="checkbox-option">
+          <input type="checkbox" id="s3" value="matooke_biannual" />
+          <span>🍌 Matooke bi-annual (Mar/Apr & Sept/Oct)</span>
+        </label>
+        <label class="checkbox-option">
+          <input type="checkbox" id="s4" value="school_fee_pressure" />
+          <span>🏫 School fee pressure months (Jan & Aug)</span>
+        </label>
+      </div>
+    </div>
+
+    <button class="btn-analyze" id="analyzeBtn" onclick="runScoutAnalysis()">
+      🌱 Analyse My Financial Profile
+    </button>
+  </div>
+
+  <!-- RIGHT: OUTPUT -->
+  <div class="output-panel">
+
+    <!-- Placeholder -->
+    <div class="output-placeholder" id="placeholder">
+      <div class="ph-icon">🌍</div>
+      <h3>Your Scout Report Will Appear Here</h3>
+      <p>Fill in your profile on the left and click Analyse. Scout will give you personalised coaching in seconds — no data leaves Kenya.</p>
+    </div>
+
+    <!-- Result card -->
+    <div class="result-card" id="resultCard">
+      <div class="result-header">
+        <div class="result-header-left">
+          <h3 id="res-name">Scout Analysis Report</h3>
+          <p id="res-sub">Generated for your occupation & income</p>
+        </div>
+        <div class="readiness-badge" id="readinessBadge">—</div>
+      </div>
+
+      <div class="result-body">
+
+        <!-- Main insight -->
+        <div class="insight-block" id="mainInsight">
+          <div class="ib-label" id="insightLabel">Income Pattern</div>
+          <p id="insightText">—</p>
+        </div>
+
+        <!-- Harvest calendar -->
+        <div class="harvest-cal" id="harvestCal">
+          <div class="harvest-cal-title">📅 Your Annual Cash Flow Calendar</div>
+          <div class="months-row" id="monthsRow"></div>
+          <div class="cal-legend">
+            <div class="cal-leg-item"><div class="leg-dot peak"></div>Peak income</div>
+            <div class="cal-leg-item"><div class="leg-dot good"></div>Good income</div>
+            <div class="cal-leg-item"><div class="leg-dot low"></div>Lean months</div>
+          </div>
+        </div>
+
+        <!-- Savings cells -->
+        <div class="savings-row">
+          <div class="savings-cell">
+            <div class="sc-label">💰 Recommended monthly saving</div>
+            <div class="sc-val" id="recSaving">—</div>
+          </div>
+          <div class="savings-cell">
+            <div class="sc-label">🎯 Loan readiness score</div>
+            <div class="sc-val gold" id="loanScore">—</div>
+          </div>
+        </div>
+
+        <!-- Advice blocks -->
+        <div class="insight-block gold" id="adviceBlock">
+          <div class="ib-label">💡 Scout Advice</div>
+          <p id="adviceText">—</p>
+        </div>
+
+        <div class="insight-block navy" id="warningBlock" style="display:none;">
+          <div class="ib-label">⚠️ Important Note</div>
+          <p id="warningText">—</p>
+        </div>
+
+        <div class="insight-block green" id="encourageBlock">
+          <div class="ib-label">🌟 Encouragement</div>
+          <p id="encourageText">—</p>
+        </div>
+
+      </div>
+
+      <div class="result-actions">
+        <a href="loan-check.html" class="btn-guardian">🧮 Proceed to Guardian Agent →</a>
+        <button class="btn-reset" onclick="resetForm()">↩ Reset</button>
+      </div>
+    </div>
+
+    <!-- Info box -->
+    <div class="info-box">
+      <div class="info-box-title">🛡️ Scout Agent Boundaries</div>
+      <ul>
+        <li>Scout coaches — it never tells you to take or avoid a specific loan</li>
+        <li>All advice is based on your Kenya/Uganda agricultural context</li>
+        <li>If you mention a loan shark or debt stress, Scout alerts the Guardian</li>
+        <li>Dial <strong>*#700#</strong> to pause all Scout messages at any time</li>
+        <li>Your data is anonymised and stored only on AWS Africa (Cape Town)</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- DISCLAIMER -->
+<div class="bottom-disclaimer">
+  <div class="disclaimer-card">
+    <div class="di-icon">⚖️</div>
+    <p><strong>AI Supports — Humans Decide.</strong> Scout Agent provides financial education and pattern analysis only. It does not approve, deny, or recommend specific loan products. All final loan decisions are made by qualified human loan officers. This output is not financial advice under the Kenya Banking Act.</p>
+  </div>
+</div>
+
+<script>
+  // Sync dependents range → display
+  const depRange = document.getElementById('dependents');
+  const depVal = document.getElementById('dep-val');
+  depRange.addEventListener('input', () => {
+    depVal.textContent = depRange.value;
+  });
+
+  // ─── OCCUPATION PROFILES ───
+  const occProfiles = {
+    market_vendor:    { label: 'Market Vendor',    seasonal: true,  peakMonths: [3,4,10,11], harvest: 'matooke_biannual' },
+    maize_farmer:     { label: 'Maize Farmer',     seasonal: true,  peakMonths: [4,5,11,12], harvest: 'long_rains' },
+    matooke_farmer:   { label: 'Matooke Farmer',   seasonal: true,  peakMonths: [3,4,9,10],  harvest: 'matooke_biannual' },
+    tea_farmer:       { label: 'Tea Farmer',        seasonal: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12], harvest: null },
+    boda_boda:        { label: 'Boda Boda Rider',  seasonal: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12], harvest: null },
+    jua_kali:         { label: 'Jua Kali Artisan', seasonal: true,  peakMonths: [1,2,6,7,12], harvest: null },
+    shopkeeper:       { label: 'Shopkeeper',        seasonal: false, peakMonths: [12,1,4,8],  harvest: null },
+    formal_employee:  { label: 'Formal Employee',  seasonal: false, peakMonths: [1,2,3,4,5,6,7,8,9,10,11,12], harvest: null },
+    shea_butter:      { label: 'Shea Butter Trader',seasonal: true, peakMonths: [4,5,10,11], harvest: 'long_rains' },
+    fish_trader:      { label: 'Fish Trader',       seasonal: true,  peakMonths: [2,3,7,8],  harvest: null },
+    other:            { label: 'Informal Trader',  seasonal: true,  peakMonths: [3,4,10,11], harvest: null },
+  };
+
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function buildCalendar(peakMonths) {
+    const container = document.getElementById('monthsRow');
+    container.innerHTML = '';
+    for (let i = 1; i <= 12; i++) {
+      const div = document.createElement('div');
+      div.className = 'month-block';
+      if (peakMonths.includes(i)) {
+        div.classList.add(peakMonths.indexOf(i) < peakMonths.length / 2 ? 'peak' : 'good');
+      } else {
+        div.classList.add('low');
+      }
+      // Mark peak months clearly
+      if (peakMonths.slice(0, Math.ceil(peakMonths.length/2)).includes(i)) {
+        div.classList.remove('low'); div.classList.add('peak');
+      } else if (peakMonths.includes(i)) {
+        div.classList.remove('low'); div.classList.add('good');
+      }
+      div.textContent = monthNames[i-1];
+      container.appendChild(div);
+    }
+  }
+
+  function runScoutAnalysis() {
+    const occ = document.getElementById('occupation').value;
+    const income = parseFloat(document.getElementById('income').value) || 0;
+    const incType = document.querySelector('input[name="income_type"]:checked')?.value || 'seasonal';
+    const deps = parseInt(depRange.value);
+    const savings = parseFloat(document.getElementById('savings').value) || 0;
+    const goal = document.getElementById('goal').value;
+
+    if (!occ) { alert('Please select your occupation.'); return; }
+    if (income <= 0) { alert('Please enter your estimated monthly income.'); return; }
+
+    const btn = document.getElementById('analyzeBtn');
+    btn.innerHTML = '<div class="spinner"></div> Analysing…';
+    btn.disabled = true;
+
+    setTimeout(() => {
+      generateReport(occ, income, incType, deps, savings, goal);
+      btn.innerHTML = '🌱 Analyse My Financial Profile';
+      btn.disabled = false;
+    }, 1400);
+  }
+
+  function generateReport(occ, income, incType, deps, savings, goal) {
+    const profile = occProfiles[occ] || occProfiles['other'];
+    const isIrregular = incType === 'irregular' || incType === 'seasonal';
+
+    // ─── READINESS SCORE ───
+    let score = 50;
+    if (income > 30000) score += 20;
+    else if (income > 15000) score += 10;
+    if (!isIrregular) score += 15;
+    if (savings > income) score += 10;
+    if (deps <= 2) score += 5;
+    if (deps >= 5) score -= 10;
+    score = Math.min(95, Math.max(20, score));
+
+    // ─── READINESS BADGE ───
+    const badge = document.getElementById('readinessBadge');
+    badge.className = 'readiness-badge';
+    if (score >= 70) {
+      badge.classList.add('ready');
+      badge.textContent = '✅ Loan Ready';
+    } else if (score >= 45) {
+      badge.classList.add('caution');
+      badge.textContent = '⚠️ Needs Preparation';
+    } else {
+      badge.classList.add('prepare');
+      badge.textContent = '🌱 Building Stage';
+    }
+
+    // ─── HEADERS ───
+    document.getElementById('res-name').textContent = `Scout Report · ${profile.label}`;
+    document.getElementById('res-sub').textContent = `Income: KES ${income.toLocaleString()}/mo · ${deps} dependents`;
+
+    // ─── MAIN INSIGHT ───
+    const insightEl = document.getElementById('mainInsight');
+    const insightLabel = document.getElementById('insightLabel');
+    const insightText = document.getElementById('insightText');
+    if (isIrregular) {
+      insightEl.className = 'insight-block orange';
+      insightLabel.textContent = '📊 Seasonal Income Detected';
+      insightText.textContent = `Your income as a ${profile.label} follows seasonal patterns. This is completely normal in Kenya's agricultural economy — however, it means your loan repayment capacity varies through the year. Scout has mapped your likely cash flow below.`;
+    } else {
+      insightEl.className = 'insight-block green';
+      insightLabel.textContent = '📊 Stable Income Pattern';
+      insightText.textContent = `Your income appears relatively stable — this is a strong foundation for loan planning. You may qualify for standard repayment schedules, though Scout still recommends aligning large repayments away from school fee months (January & August).`;
+    }
+
+    // ─── CALENDAR ───
+    buildCalendar(profile.peakMonths);
+
+    // ─── SAVINGS RECOMMENDATION ───
+    const savingRate = isIrregular ? 0.20 : 0.15;
+    const recSaving = Math.round(income * savingRate / 500) * 500;
+    document.getElementById('recSaving').textContent = `KES ${recSaving.toLocaleString()}/mo`;
+    document.getElementById('loanScore').textContent = `${score} / 100`;
+
+    // ─── ADVICE ───
+    const adviceMap = {
+      loan_readiness: `To improve your loan readiness score from ${score} to 80+, focus on building ${Math.round(income * 2).toLocaleString()} KES in consistent savings over the next 2–3 months. Your ${profile.label} income${isIrregular ? ' peaks during harvest — deposit surplus immediately after each harvest cycle' : ' is stable — set up an automatic SACCO deduction of KES ' + recSaving.toLocaleString()}.`,
+      savings_plan: `A disciplined savings plan for your occupation: save KES ${recSaving.toLocaleString()} every month during regular periods. During peak months, increase this to KES ${Math.round(recSaving * 1.5).toLocaleString()}. In lean months, even KES ${Math.round(recSaving * 0.5).toLocaleString()} keeps the habit alive.`,
+      repayment_plan: `Plan your loan repayments around your income calendar. Schedule larger instalments during ${profile.peakMonths.slice(0,3).map(m=>monthNames[m-1]).join(', ')} when cash flow is strongest. Request a harvest-aligned repayment schedule from your loan officer.`,
+      general: `Based on your income of KES ${income.toLocaleString()} with ${deps} dependent${deps !== 1 ? 's' : ''}, your financial health baseline is ${score >= 70 ? 'positive' : 'developing'}. Prioritise an emergency fund of at least KES ${Math.round(income * 1.5).toLocaleString()} before taking any new loan commitment.`,
+    };
+    document.getElementById('adviceText').textContent = adviceMap[goal] || adviceMap['general'];
+
+    // ─── WARNING (only if stress flags) ───
+    const warnEl = document.getElementById('warningBlock');
+    if (deps >= 4 || (income < 10000 && deps >= 2) || incType === 'irregular') {
+      warnEl.style.display = 'block';
+      let warnText = '';
+      if (incType === 'irregular') warnText = 'Irregular income increases repayment risk. Scout recommends waiting until your income pattern stabilises over at least 3 months before applying for a loan above KES 15,000. ';
+      if (deps >= 4) warnText += `With ${deps} dependents, school fee pressure in January and August may strain repayment capacity. Discuss a grace period for those months with your loan officer. `;
+      if (income < 10000 && deps >= 2) warnText += 'Your current income-to-dependents ratio suggests limited buffer. A human loan officer review is recommended before any commitment.';
+      document.getElementById('warningText').textContent = warnText.trim();
+    } else {
+      warnEl.style.display = 'none';
+    }
+
+    // ─── ENCOURAGEMENT ───
+    const encouragements = [
+      `Your decision to plan before borrowing shows strong financial wisdom. Many members who completed Scout analysis improved their loan readiness score by 20+ points within 60 days.`,
+      `In Kenya's informal economy, seasonal income is not a weakness — it's a rhythm. Understanding your rhythm is the first step to using it wisely.`,
+      `You are ahead of most applicants. Knowing your harvest calendar and planning around it is exactly what separates financially resilient traders from those who struggle with repayments.`,
+      `The SACCO system was built by people like you — for people like you. Your community's collective strength is your real financial asset.`,
+    ];
+    document.getElementById('encourageText').textContent =
+      encouragements[Math.floor(Math.random() * encouragements.length)];
+
+    // ─── SHOW RESULT ───
+    document.getElementById('placeholder').style.display = 'none';
+    const card = document.getElementById('resultCard');
+    card.classList.add('show');
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function resetForm() {
+    document.getElementById('resultCard').classList.remove('show');
+    document.getElementById('placeholder').style.display = 'block';
+    document.getElementById('occupation').value = '';
+    document.getElementById('income').value = '';
+    document.getElementById('savings').value = '';
+    depRange.value = 0;
+    depVal.textContent = '0';
+    document.getElementById('dep-display').textContent = '(0)';
+  }
+</script>
+<script type="module">
+
+async function submitScout() {
+  const data = {
+    occupation: document.getElementById("occupation").value,
+    monthlyIncome: document.getElementById("income").value,
+    harvestSeason: document.getElementById("season").value,
+    goal: document.getElementById("goal").value
+  };
+
+  const res = await scout(data);
+
+  console.log(res);
+  document.getElementById("output").innerText =
+    JSON.stringify(res.data, null, 2);
+}
+</script>
+<script type="module">
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "index.html";
+  }
+});
+</script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0jCZ5g5vnCKI3ihbeSCmfbHZELQtbvIQ",
+    authDomain: "ujima-ai-c3c48.firebaseapp.com",
+    projectId: "ujima-ai-c3c48",
+    storageBucket: "ujima-ai-c3c48.firebasestorage.app",
+    messagingSenderId: "711296977200",
+    appId: "1:711296977200:web:9b8065b33cace5562e20f5"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  console.log("🔥 Firebase connected successfully!");
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js"></script>
+
+<script src="firebase.js"></script>
+</body>
+</html>
