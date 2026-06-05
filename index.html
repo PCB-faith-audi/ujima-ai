@@ -811,7 +811,7 @@ function logoutUser() {
 async function sendMessage() {
   const message = document.getElementById("input").value;
 
-  const res = await fetch("http://localhost:3000/api/chat", {
+  const res = await fetch("https://your-backend-url.vercel.app/api/chat", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -826,21 +826,23 @@ async function sendMessage() {
 </script>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const registerBtn = document.getElementById("registerBtn");
 
-if (registerBtn) {
-  registerBtn.addEventListener("click", async () => {
-    try {
-      await firebase.auth().createUserWithEmailAndPassword(
-        document.getElementById("email").value,
-        document.getElementById("password").value
-      );
-
-      alert("Account created successfully!");
-    } catch (err) {
-      alert(err.message);
-    }
-  });
-}
+  if (registerBtn) {
+    registerBtn.addEventListener("click", async () => {
+      try {
+        await firebase.auth().createUserWithEmailAndPassword(
+          document.getElementById("email").value,
+          document.getElementById("password").value
+        );
+        alert("Account created successfully!");
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+});
 </script>
 
 <!-- Firebase (CLEAN VERSION) -->
