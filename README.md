@@ -7,7 +7,7 @@ It combines AI-driven analysis with **human oversight** to ensure ethical, expla
 ---
 
 ## 🚀 Live Demo
-> (Add your Netlify / Render link here after deployment)
+https://ujima-ai-seven.vercel.app/
 
 ---
 
